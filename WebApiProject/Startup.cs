@@ -1,16 +1,13 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using WebApiProject.Domain.Repositories;
+using WebApiProject.Infrastructure.Db;
+using WebApiProject.Infrastructure.Repositories;
 
 namespace WebApiProject
 {
@@ -26,6 +23,12 @@ namespace WebApiProject
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddScoped<IProductsRepository, ProductsRepository>();
+
+            services.AddDbContext<DatabaseContext>(builder =>
+            {
+                builder.UseSqlServer(Configuration["ConnectionStrings:DefaultConnection"]);
+            });
 
             services.AddControllers();
             services.AddSwaggerGen(c =>
