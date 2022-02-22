@@ -12,8 +12,8 @@ namespace WebApiProject.Infrastructure.Repositories
 {
     public class ProductsRepository : IProductsRepository
     {
-        private readonly DatabaseContext _dbContext
-            ;
+        private readonly DatabaseContext _dbContext;
+
         public ProductsRepository(DatabaseContext dbContext) => _dbContext = dbContext;
 
         public IEnumerable<Product> GetAll()
@@ -29,21 +29,6 @@ namespace WebApiProject.Infrastructure.Repositories
         public Product GetById(int productId)
         {
             return _dbContext.Products.FirstOrDefault(p => p.Id == productId);
-        }
-
-        public Task<Product> GetByIdAsync(int productId)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Insert(Product product)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Remove(Product product)
-        {
-            throw new NotImplementedException();
         }
     }
 }

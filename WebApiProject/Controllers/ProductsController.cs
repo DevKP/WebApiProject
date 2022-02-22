@@ -10,6 +10,7 @@ namespace WebApiProject.Web.Controllers
     public class ProductsController : ControllerBase
     {
         private readonly IProductsRepository _productRepository;
+
         public ProductsController(IProductsRepository productsRepository)
         {
             _productRepository = productsRepository;
@@ -18,22 +19,21 @@ namespace WebApiProject.Web.Controllers
         [HttpGet()]
         public IActionResult GetAll()
         {
-            var subject = _productRepository.GetAll();
+            var products = _productRepository.GetAll();
 
-            return Ok(subject);
+            return Ok(products);
         }
 
-
         [HttpGet("{id}")]
-        public IActionResult Get(int id)
+        public IActionResult Get(int? id)
         {
-            var subject = _productRepository.GetById(id);
-            if (subject == null)
+            var products = _productRepository.GetById(id);
+            if (products == null)
             {
                 return NotFound("Product not found.");
             }
 
-            return Ok(subject);
+            return Ok(products);
         }
     }
 }

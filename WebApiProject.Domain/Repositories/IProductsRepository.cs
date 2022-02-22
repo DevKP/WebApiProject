@@ -13,9 +13,5 @@ namespace WebApiProject.Domain.Repositories
         IEnumerable<Product> GetAll();
 
         Product GetById(int productId);
-
-        void Insert(Product product);
-
-        void Remove(Product product);
     }
 }
