@@ -25,13 +25,13 @@ namespace WebApiProject.Web.Controllers
         [HttpGet("{id}")]
         public IActionResult Get(int id)
         {
-            var products = _productsRepository.GetById(id);
-            if (products == null)
+            var product = _productsRepository.GetById(id);
+            if (product == null)
             {
                 return NotFound("Product not found.");
             }
 
-            return Ok(products);
+            return Ok(product);
         }
     }
 }
