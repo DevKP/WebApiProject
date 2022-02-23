@@ -21,11 +21,6 @@ namespace WebApiProject.Infrastructure.Repositories
             return _dbContext.Products.ToList();
         }
 
-        public Task<IEnumerable<Product>> GetAllAsync()
-        {
-            throw new NotImplementedException();
-        }
-
         public Product GetById(int productId)
         {
             return _dbContext.Products.FirstOrDefault(p => p.Id == productId);
