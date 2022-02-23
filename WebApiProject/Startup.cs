@@ -8,8 +8,9 @@ using Microsoft.OpenApi.Models;
 using WebApiProject.Domain.Repositories;
 using WebApiProject.Infrastructure.Db;
 using WebApiProject.Infrastructure.Repositories;
+using WebApiProject.Web.Data;
 
-namespace WebApiProject
+namespace WebApiProject.Web
 {
     public class Startup
     {
@@ -27,7 +28,8 @@ namespace WebApiProject
 
             services.AddDbContext<DatabaseContext>(builder =>
             {
-                builder.UseSqlServer(Configuration["ConnectionStrings:DefaultConnection"]);
+                var connection = Configuration.GetConnectionString(Constants.ConnectionStringKey);
+                builder.UseSqlServer(connection);
             });
 
             services.AddControllers();

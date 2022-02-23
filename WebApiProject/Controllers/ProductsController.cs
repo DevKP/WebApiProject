@@ -1,6 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
-using WebApiProject.Domain.Entities;
 using WebApiProject.Domain.Repositories;
 
 namespace WebApiProject.Web.Controllers
