@@ -25,5 +25,18 @@ namespace WebApiProject.Infrastructure.Repositories
         {
             return _dbContext.Products.FirstOrDefault(p => p.Id == productId);
         }
+
+        public string GetTheMostFrequentCategoryName()
+        {
+            return _dbContext.Products
+                .GroupBy(p => p.Category.Name, 
+                    (name, products) =>
+                        new
+                        {
+                            Count = products.Count(),
+                            Name = name
+                        })
+                        .First().Name;
+        }
     }
 }
