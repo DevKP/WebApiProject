@@ -31,12 +31,13 @@ namespace WebApiProject.Infrastructure.Repositories
             return _dbContext.Products
                 .GroupBy(p => p.Category.Name, 
                     (name, products) =>
-                        new
-                        {
-                            Count = products.Count(),
-                            Name = name
-                        })
-                        .First().Name;
+                    new
+                    {
+                        Count = products.Count(),
+                        Name = name
+                    })
+                .OrderByDescending(p => p.Count)
+                .First().Name;
         }
     }
 }
