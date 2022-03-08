@@ -14,7 +14,7 @@ namespace WebApiProject.Infrastructure.Configurations
         public void Configure(EntityTypeBuilder<Category> builder)
         {
             builder.HasKey(category => category.Id);
-            builder.Property(category => category.Name).IsRequired();
+            builder.Property(category => category.Name).IsRequired().HasMaxLength(150);
 
             builder.HasMany(category => category.Products)
                    .WithOne(product => product.Category);
