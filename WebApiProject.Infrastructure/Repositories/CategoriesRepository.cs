@@ -22,7 +22,7 @@ namespace WebApiProject.Infrastructure.Repositories
 
         public Category GetById(int categoryId)
         {
-            return _dbContext.Categories.FirstOrDefault(c => c.Id == categoryId);
+            return _dbContext.Categories.Find(categoryId);
         }
     }
 }

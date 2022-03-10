@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -23,7 +24,7 @@ namespace WebApiProject.Infrastructure.Repositories
 
         public Product GetById(int productId)
         {
-            return _dbContext.Products.FirstOrDefault(p => p.Id == productId);
+            return _dbContext.Products.Find(productId);
         }
 
         public string GetTheMostFrequentCategoryName()
