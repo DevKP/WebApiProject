@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using WebApiProject.Domain.Entities;
 using WebApiProject.Domain.Repositories;
 using WebApiProject.Infrastructure.Db;
@@ -15,14 +16,14 @@ namespace WebApiProject.Infrastructure.Repositories
 
         public CategoriesRepository(DatabaseContext dbContext) => _dbContext = dbContext;
 
-        public IEnumerable<Category> GetAll()
+        public async Task<List<Category>> GetAllAsync()
         {
-            return _dbContext.Categories.ToList();
+            return await _dbContext.Categories.ToListAsync();
         }
 
-        public Category GetById(int categoryId)
+        public async Task<Category> GetByIdAsync(int categoryId)
         {
-            return _dbContext.Categories.Find(categoryId);
+            return await _dbContext.Categories.FindAsync(categoryId);
         }
     }
 }

@@ -9,6 +9,7 @@ using WebApiProject.Domain.Repositories;
 using WebApiProject.Infrastructure.Db;
 using WebApiProject.Infrastructure.Repositories;
 using WebApiProject.Web.Data;
+using WebApiProject.Web.Services;
 
 namespace WebApiProject.Web
 {
@@ -26,17 +27,21 @@ namespace WebApiProject.Web
         {
             services.AddScoped<IProductsRepository, ProductsRepository>();
 
+            services.AddTransient<IProductsService, ProductsService>();
+
             services.AddDbContext<DatabaseContext>(builder =>
             {
                 var connection = Configuration.GetConnectionString(Constants.ConnectionStringKey);
-                builder.UseSqlServer(connection);
+                builder.UseSqlServer(connection).UseLazyLoadingProxies();
             });
 
             services.AddControllers();
+            services.AddAutoMapper(typeof(Startup));
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "WebApiProject", Version = "v1" });
             });
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

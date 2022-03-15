@@ -17,14 +17,14 @@ namespace WebApiProject.Infrastructure.Repositories
 
         public ProductsRepository(DatabaseContext dbContext) => _dbContext = dbContext;
 
-        public IEnumerable<Product> GetAll()
+        public async Task<List<Product>> GetAllAsync()
         {
-            return _dbContext.Products.ToList();
+            return await _dbContext.Products.ToListAsync();
         }
 
-        public Product GetById(int productId)
+        public async Task<Product> GetByIdAsync(int productId)
         {
-            return _dbContext.Products.Find(productId);
+            return await _dbContext.Products.FindAsync(productId);
         }
 
         public string GetTheMostFrequentCategoryName()

@@ -8,8 +8,8 @@ namespace WebApiProject.Domain.Repositories
 {
     public interface IRepository<T> where T : class, new()
     {
-        IEnumerable<T> GetAll();
+        Task<List<T>> GetAllAsync();
 
-        T GetById(int id);
+        Task<T> GetByIdAsync(int id);
     }
 }
