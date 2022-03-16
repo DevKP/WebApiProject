@@ -5,7 +5,7 @@ namespace WebApiProject.Web.Services
 {
     public interface IProductsService
     {
-        Task<ProductResponseModel> GetAsync(int id);
-        Task<ProductsListResponseModel> GetAllAsync();
+        Task<Response<ProductResponseModel>> GetAsync(int id);
+        Task<Response<ProductsListResponseModel>> GetAllAsync();
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -21,26 +22,36 @@ namespace WebApiProject.Web.Controllers
         }
 
         [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ProductsListResponseModel))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Response<ProductsListResponseModel>))]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Response<ProductsListResponseModel>))]
         public async Task<IActionResult> GetAll()
         {
-            var products = await _productsService.GetAllAsync();
+            var productsListResponse = await _productsService.GetAllAsync();
 
-            return Ok(products);
+            return productsListResponse.Status switch
+            {
+                ResponseStatus.Ok => Ok(productsListResponse),
+                ResponseStatus.Error => BadRequest(productsListResponse),
+                ResponseStatus.NotFound => NotFound(productsListResponse),
+                _ => StatusCode(500)
+            };
         }
 
         [HttpGet("{id}")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ProductResponseModel))]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Response<ProductResponseModel>))]
+        [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Response<ProductResponseModel>))]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Response<ProductResponseModel>))]
         public async Task<IActionResult> Get(int id)
         {
-            var product = await _productsService.GetAsync(id);
-            if (product == null)
-            {
-                return NotFound("Product not found.");
-            }
+            var productResponse = await _productsService.GetAsync(id);
 
-            return Ok(product);
+            return productResponse.Status switch
+            {
+                ResponseStatus.Ok => Ok(productResponse),
+                ResponseStatus.Error => BadRequest(productResponse),
+                ResponseStatus.NotFound => NotFound(productResponse),
+                _ => StatusCode(500)
+            };
         }
     }
 }
