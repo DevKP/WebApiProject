@@ -15,7 +15,7 @@ using Xunit;
 namespace WebApiProject.UnitTests
 {
   
-    public class ProductsControllerTests
+    public class ProductsServiceTests
     {
         private readonly Mock<IProductsRepository> _productsRepositoryMock;
         private readonly Mock<IMapper> _mapperMock;
@@ -24,7 +24,7 @@ namespace WebApiProject.UnitTests
         private readonly CancellationToken _cancellationToken;
         private readonly Mock<ILogger<ProductsService>> _logger;
 
-        public ProductsControllerTests()
+        public ProductsServiceTests()
         {
             _productsRepositoryMock = new Mock<IProductsRepository>();
             _mapperMock = new Mock<IMapper>();
@@ -39,7 +39,7 @@ namespace WebApiProject.UnitTests
         }
 
         [Fact]
-        public async void GetProductById_ProductResponse()
+        public async void GetProductById_ProductExisting_ProductResponse()
         {
             // Arrange
             var product = new Product
@@ -83,7 +83,7 @@ namespace WebApiProject.UnitTests
         }
 
         [Fact]
-        public async void GetProductById_NotFound()
+        public async void GetProductById_RepositoryReturnsNull_NotFoundResponseModel()
         {
             // Arrange
             _productsRepositoryMock.Setup(repo => repo.GetByIdAsync(It.IsAny<int>()))
@@ -110,7 +110,7 @@ namespace WebApiProject.UnitTests
         }
 
         [Fact]
-        public async void GetProductById_Error()
+        public async void GetProductById_UnknownExceptionInService_ErrorResponseModel()
         {
             // Arrange
             _productsRepositoryMock.Setup(repo => repo.GetByIdAsync(It.IsAny<int>()))
