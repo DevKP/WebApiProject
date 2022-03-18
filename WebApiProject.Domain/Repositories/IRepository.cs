@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace WebApiProject.Domain.Repositories
 {
-    public interface IRepository<T> where T : class, new()
+    public interface IRepository<T> where T : class
     {
-        Task<List<T>> GetAllAsync(CancellationToken cancellationToken = default);
+        Task<IEnumerable<T>> GetAllAsync();
 
         Task<T> GetByIdAsync(int id);
     }

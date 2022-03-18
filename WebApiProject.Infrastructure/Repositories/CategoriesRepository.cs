@@ -17,9 +17,9 @@ namespace WebApiProject.Infrastructure.Repositories
 
         public CategoriesRepository(DatabaseContext dbContext) => _dbContext = dbContext;
 
-        public async Task<List<Category>> GetAllAsync(CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<Category>> GetAllAsync()
         {
-            return await _dbContext.Categories.ToListAsync(cancellationToken);
+            return await _dbContext.Categories.ToListAsync();
         }
 
         public async Task<Category> GetByIdAsync(int categoryId)
