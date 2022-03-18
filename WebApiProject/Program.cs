@@ -12,6 +12,7 @@ namespace WebApiProject.Web
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.Console()
                 .MinimumLevel.Information()
+                .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
                 .CreateLogger();
 
             try
