@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 using WebApiProject.Web.Models.Responses;
 
 namespace WebApiProject.Web.Services
@@ -6,6 +7,6 @@ namespace WebApiProject.Web.Services
     public interface IProductsService
     {
         Task<Response<ProductResponseModel>> GetAsync(int id);
-        Task<Response<ProductsListResponseModel>> GetAllAsync();
+        Task<Response<ProductResponseModel[]>> GetAllAsync(CancellationToken cancellationToken = default);
     }
 }

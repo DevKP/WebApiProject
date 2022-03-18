@@ -22,8 +22,8 @@ namespace WebApiProject.Web.Controllers
         }
 
         [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Response<ProductsListResponseModel>))]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Response<ProductsListResponseModel>))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Response<ProductResponseModel[]>))]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Response<ProductResponseModel[]>))]
         public async Task<IActionResult> GetAll()
         {
             var productsListResponse = await _productsService.GetAllAsync();

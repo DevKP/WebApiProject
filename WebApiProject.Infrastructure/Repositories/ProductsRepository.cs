@@ -18,9 +18,9 @@ namespace WebApiProject.Infrastructure.Repositories
 
         public ProductsRepository(DatabaseContext dbContext) => _dbContext = dbContext;
 
-        public async Task<List<Product>> GetAllAsync()
+        public async Task<List<Product>> GetAllAsync(CancellationToken cancellationToken = default)
         {
-            return await _dbContext.Products.ToListAsync();
+            return await _dbContext.Products.ToListAsync(cancellationToken);
         }
 
         public async Task<Product> GetByIdAsync(int productId)

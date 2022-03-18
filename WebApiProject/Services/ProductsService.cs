@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
@@ -15,7 +16,8 @@ namespace WebApiProject.Web.Services
         private readonly IMapper _mapper;
         private readonly ILogger<ProductsService> _logger;
 
-        public ProductsService(IProductsRepository productsRepository, IMapper mapper, ILogger<ProductsService> logger)
+        public ProductsService(IProductsRepository productsRepository, IMapper mapper,
+            ILogger<ProductsService> logger)
         {
             _productsRepository = productsRepository;
             _mapper = mapper;
@@ -33,7 +35,8 @@ namespace WebApiProject.Web.Services
                 var response = new Response<ProductResponseModel>
                 {
                     Data = responseModel,
-                    Status = ResponseStatus.Ok
+                    Status = ResponseStatus.Ok,
+                    ErrorMessage = nameof(ResponseStatus.Ok)
                 };
 
                 if (response.Data is null)
@@ -60,17 +63,18 @@ namespace WebApiProject.Web.Services
         }
 
 
-        public async Task<Response<ProductsListResponseModel>> GetAllAsync()
+        public async Task<Response<ProductResponseModel[]>> GetAllAsync(CancellationToken cancellationToken = default)
         {
             try
             {
                 _logger.LogInformation("Retrieving all products from database.");
 
-                var products = await _productsRepository.GetAllAsync();
-                var responseModel = _mapper.Map<ProductsListResponseModel>(products);
-                var response = new Response<ProductsListResponseModel>
+                var products = await _productsRepository.GetAllAsync(cancellationToken);
+                var responseModel = _mapper.Map<ProductResponseModel[]>(products);
+                var response = new Response<ProductResponseModel[]>
                 {
                     Data = responseModel,
+                    ErrorMessage = nameof(ResponseStatus.Ok),
                     Status = ResponseStatus.Ok
                 };
 
@@ -80,7 +84,7 @@ namespace WebApiProject.Web.Services
             {
                 _logger.LogError("Error while retrieving all products from database.");
 
-                return new Response<ProductsListResponseModel>
+                return new Response<ProductResponseModel[]>
                 {
                     Status = ResponseStatus.Error,
                     ErrorMessage = ex.Message,
