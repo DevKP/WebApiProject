@@ -6,6 +6,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using WebApiProject.Domain.Repositories;
+using WebApiProject.Web.GuardClauses;
 using WebApiProject.Web.Models.Responses;
 
 namespace WebApiProject.Web.Services
@@ -19,6 +20,10 @@ namespace WebApiProject.Web.Services
         public ProductsService(IProductsRepository productsRepository, IMapper mapper,
             ILogger<IProductsService> logger)
         {
+            Guard.Against.Null(productsRepository, nameof(productsRepository));
+            Guard.Against.Null(mapper, nameof(mapper));
+            Guard.Against.Null(logger, nameof(logger));
+
             _productsRepository = productsRepository;
             _mapper = mapper;
             _logger = logger;

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using WebApiProject.Domain.Entities;
 using WebApiProject.Domain.Repositories;
+using WebApiProject.Web.GuardClauses;
 using WebApiProject.Web.Models.Responses;
 using WebApiProject.Web.Services;
 
@@ -18,12 +19,14 @@ namespace WebApiProject.Web.Controllers
 
         public ProductsController(IProductsService productsService)
         {
+            Guard.Against.Null(productsService, nameof(productsService));
+
             _productsService = productsService;
         }
 
         [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Response<ProductResponseModel[]>))]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Response<ProductResponseModel[]>))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Response<ProductsListResponseModel>))]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Response<ProductsListResponseModel>))]
         public async Task<IActionResult> GetAll()
         {
             var productsListResponse = await _productsService.GetAllAsync();

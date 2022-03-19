@@ -24,4 +24,8 @@
     <ProjectReference Include="..\WebApiProject.Infrastructure\WebApiProject.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="GuardClauses\" />
+  </ItemGroup>
+
 </Project>
