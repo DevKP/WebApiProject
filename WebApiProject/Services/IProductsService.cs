@@ -7,6 +7,6 @@ namespace WebApiProject.Web.Services
     public interface IProductsService
     {
         Task<Response<ProductResponseModel>> GetAsync(int id);
-        Task<Response<ProductResponseModel[]>> GetAllAsync(CancellationToken cancellationToken = default);
+        Task<Response<ProductsListResponseModel>> GetAllAsync();
     }
 }

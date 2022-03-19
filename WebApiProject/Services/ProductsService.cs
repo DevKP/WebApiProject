@@ -14,10 +14,10 @@ namespace WebApiProject.Web.Services
     {
         private readonly IProductsRepository _productsRepository;
         private readonly IMapper _mapper;
-        private readonly ILogger<ProductsService> _logger;
+        private readonly ILogger<IProductsService> _logger;
 
         public ProductsService(IProductsRepository productsRepository, IMapper mapper,
-            ILogger<ProductsService> logger)
+            ILogger<IProductsService> logger)
         {
             _productsRepository = productsRepository;
             _mapper = mapper;
@@ -28,15 +28,14 @@ namespace WebApiProject.Web.Services
         {
             try
             {
-                _logger.LogInformation("Retrieving product {Id} from database.", id);
+                _logger.LogInformation("Retrieving product Id {Id} from database.", id);
 
                 var product = await _productsRepository.GetByIdAsync(id);
                 var responseModel = _mapper.Map<ProductResponseModel>(product);
                 var response = new Response<ProductResponseModel>
                 {
                     Data = responseModel,
-                    Status = ResponseStatus.Ok,
-                    ErrorMessage = nameof(ResponseStatus.Ok)
+                    Status = ResponseStatus.Ok
                 };
 
                 if (response.Data is null)
@@ -44,14 +43,14 @@ namespace WebApiProject.Web.Services
                     response.Status = ResponseStatus.NotFound;
                     response.ErrorMessage = nameof(ResponseStatus.NotFound);
 
-                    _logger.LogInformation("Product {Id} not found.", id);
+                    _logger.LogInformation("Product Id:{Id} not found.", id);
                 }
 
                 return response;
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error while retrieving product {Id} from database.", id);
+                _logger.LogError("Error while retrieving product Id:{Id} from database.", id);
 
                 return new Response<ProductResponseModel>
                 {
@@ -63,18 +62,17 @@ namespace WebApiProject.Web.Services
         }
 
 
-        public async Task<Response<ProductResponseModel[]>> GetAllAsync(CancellationToken cancellationToken = default)
+        public async Task<Response<ProductsListResponseModel>> GetAllAsync()
         {
             try
             {
                 _logger.LogInformation("Retrieving all products from database.");
 
-                var products = await _productsRepository.GetAllAsync(cancellationToken);
-                var responseModel = _mapper.Map<ProductResponseModel[]>(products);
-                var response = new Response<ProductResponseModel[]>
+                var products = await _productsRepository.GetAllAsync();
+                var responseModel = _mapper.Map<ProductsListResponseModel>(products);
+                var response = new Response<ProductsListResponseModel>
                 {
                     Data = responseModel,
-                    ErrorMessage = nameof(ResponseStatus.Ok),
                     Status = ResponseStatus.Ok
                 };
 
@@ -84,10 +82,10 @@ namespace WebApiProject.Web.Services
             {
                 _logger.LogError("Error while retrieving all products from database.");
 
-                return new Response<ProductResponseModel[]>
+                return new Response<ProductsListResponseModel>
                 {
                     Status = ResponseStatus.Error,
-                    ErrorMessage = ex.Message,
+                    ErrorMessage = "Error while retrieving all products from database.",
                     StackTrace = ex.StackTrace
                 };
             }

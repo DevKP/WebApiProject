@@ -14,28 +14,23 @@ using Xunit;
 
 namespace WebApiProject.UnitTests
 {
-  
     public class ProductsServiceTests
     {
         private readonly Mock<IProductsRepository> _productsRepositoryMock;
         private readonly Mock<IMapper> _mapperMock;
         private readonly ProductsService _productsService;
 
-        private readonly CancellationToken _cancellationToken;
-        private readonly Mock<ILogger<ProductsService>> _logger;
-
         public ProductsServiceTests()
         {
             _productsRepositoryMock = new Mock<IProductsRepository>();
             _mapperMock = new Mock<IMapper>();
 
-            _cancellationToken = new CancellationTokenSource().Token;
-            _logger = new Mock<ILogger<ProductsService>>();
-            _logger.Setup(logger => logger.IsEnabled(It.IsAny<LogLevel>()))
+            var loggerMock = new Mock<ILogger<IProductsService>>();
+            loggerMock.Setup(logger => logger.IsEnabled(It.IsAny<LogLevel>()))
                 .Returns(true)
-                .Callback(() => _logger.Verify(logger => logger.IsEnabled(It.IsAny<LogLevel>())));
+                .Callback(() => loggerMock.Verify(logger => logger.IsEnabled(It.IsAny<LogLevel>())));
 
-            _productsService = new ProductsService(_productsRepositoryMock.Object, _mapperMock.Object, _logger.Object);
+            _productsService = new ProductsService(_productsRepositoryMock.Object, _mapperMock.Object, loggerMock.Object);
         }
 
         [Fact]
@@ -60,19 +55,17 @@ namespace WebApiProject.UnitTests
                 CategoryName = "Test category"
             };
 
-            _productsRepositoryMock.Setup(repo => repo.GetByIdAsync(It.IsAny<int>())).ReturnsAsync(product);
+            SetupGetByIdAsyncResult(product);
             _mapperMock.Setup(mapper => mapper.Map<ProductResponseModel>(It.Is<Product>(p => p == product)))
                 .Returns(productResponse);
-
 
             // Act
             var result = await _productsService.GetAsync(1);
 
-
             // Assert
             result.Should().BeAssignableTo<Response<ProductResponseModel>>();
             result.Status.Should().Be(ResponseStatus.Ok);
-            result.ErrorMessage.Should().Be(nameof(ResponseStatus.Ok));
+            result.ErrorMessage.Should().BeNull();
             result.Data.Should().Be(productResponse);
 
             _mapperMock.Verify(mapper => mapper.Map<ProductResponseModel>(It.IsAny<Product>()), Times.Exactly(1));
@@ -86,15 +79,12 @@ namespace WebApiProject.UnitTests
         public async void GetProductById_RepositoryReturnsNull_NotFoundResponseModel()
         {
             // Arrange
-            _productsRepositoryMock.Setup(repo => repo.GetByIdAsync(It.IsAny<int>()))
-                .ReturnsAsync(await Task.FromResult<Product>(null));
+            SetupGetByIdAsyncResult(null);
             _mapperMock.Setup(mapper => mapper.Map<ProductResponseModel>(It.Is<Product>(p => p == null)))
                 .Returns<ProductResponseModel>(null);
 
-
             // Act
             var result = await _productsService.GetAsync(1);
-
 
             // Assert
             result.Should().BeAssignableTo<Response<ProductResponseModel>>();
@@ -116,10 +106,8 @@ namespace WebApiProject.UnitTests
             _productsRepositoryMock.Setup(repo => repo.GetByIdAsync(It.IsAny<int>()))
                 .Throws<Exception>();
 
-
             // Act
             var result = await _productsService.GetAsync(1);
-
 
             // Assert
             result.Should().BeAssignableTo<Response<ProductResponseModel>>();
@@ -132,6 +120,11 @@ namespace WebApiProject.UnitTests
 
             _mapperMock.VerifyNoOtherCalls();
             _productsRepositoryMock.VerifyNoOtherCalls();
+        }
+
+        private void SetupGetByIdAsyncResult(Product product)
+        {
+            _productsRepositoryMock.Setup(repo => repo.GetByIdAsync(It.IsAny<int>())).ReturnsAsync(product);
         }
     }
 }

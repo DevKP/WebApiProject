@@ -9,11 +9,7 @@ namespace WebApiProject.Web
     {
         public static void Main(string[] args)
         {
-            Log.Logger = new LoggerConfiguration()
-                .WriteTo.Console()
-                .MinimumLevel.Information()
-                .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-                .CreateLogger();
+            CreateLogger();
 
             try
             {
@@ -23,6 +19,15 @@ namespace WebApiProject.Web
             {
                 Log.CloseAndFlush();
             }
+        }
+
+        private static void CreateLogger()
+        {
+            Log.Logger = new LoggerConfiguration()
+                .WriteTo.Console()
+                .MinimumLevel.Information()
+                .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+                .CreateLogger();
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
