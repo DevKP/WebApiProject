@@ -23,12 +23,12 @@ namespace WebApiProject.UnitTests
         private readonly Mock<IProductsRepository> _productsRepositoryMock;
         private readonly Mock<IMapper> _mapperMock;
         private readonly Mock<ILogger<IProductsService>> _loggerMock;
-        private readonly ProductsService _productsService;
+        private readonly ProductsService sut;
         private readonly Fixture _fixture = new();
 
         public ProductsServiceTests()
         {
-            ConfigureFixtureBehavior();
+            SetFixtureRecursionDepth(1);
 
             _productsRepositoryMock = new Mock<IProductsRepository>();
             _mapperMock = new Mock<IMapper>();
@@ -38,7 +38,7 @@ namespace WebApiProject.UnitTests
                 .Returns(true)
                 .Callback(() => _loggerMock.Verify(logger => logger.IsEnabled(It.IsAny<LogLevel>())));
 
-            _productsService = new ProductsService(_productsRepositoryMock.Object, _mapperMock.Object, _loggerMock.Object);
+            sut = new ProductsService(_productsRepositoryMock.Object, _mapperMock.Object, _loggerMock.Object);
         }
 
         [Fact]
@@ -63,7 +63,7 @@ namespace WebApiProject.UnitTests
         }
 
         [Fact]
-        public async void GetProductById_WhenProductExisting_ThenProductResponse()
+        public async Task GetProductById_WhenProductExists_ThenReturnOkProductResponse()
         {
             // Arrange
             var product = _fixture.Create<Product>();
@@ -82,7 +82,7 @@ namespace WebApiProject.UnitTests
                 .Returns(productResponse);
 
             // Act
-            var result = await _productsService.GetAsync(1);
+            var result = await sut.GetAsync(1);
 
             // Assert
             result.Should().BeAssignableTo<Response<ProductResponseModel>>();
@@ -98,7 +98,7 @@ namespace WebApiProject.UnitTests
         }
 
         [Fact]
-        public async void GetProductById_WhenRepositoryReturnsNull_ThenNotFoundResponseModel()
+        public async Task GetProductById_WhenRepositoryReturnsNull_ThenReturnNotFoundResponse()
         {
             // Arrange
             SetupGetByIdAsyncResult(null);
@@ -106,7 +106,7 @@ namespace WebApiProject.UnitTests
                 .Returns<ProductResponseModel>(null);
 
             // Act
-            var result = await _productsService.GetAsync(1);
+            var result = await sut.GetAsync(1);
 
             // Assert
             result.Should().BeAssignableTo<Response<ProductResponseModel>>();
@@ -122,14 +122,14 @@ namespace WebApiProject.UnitTests
         }
 
         [Fact]
-        public async void GetProductById_WhenUnknownExceptionInService_ThenErrorResponseModel()
+        public async Task GetProductById_WhenUnknownExceptionOccursInService_ThenReturnErrorResponse()
         {
             // Arrange
             _productsRepositoryMock.Setup(repo => repo.GetByIdAsync(It.IsAny<int>()))
                 .Throws<Exception>();
 
             // Act
-            var result = await _productsService.GetAsync(1);
+            var result = await sut.GetAsync(1);
 
             // Assert
             result.Should().BeAssignableTo<Response<ProductResponseModel>>();
@@ -145,7 +145,7 @@ namespace WebApiProject.UnitTests
         }
 
         [Fact]
-        public async void GetAll_WhenProductsTableNotEmpty_ThenProductListResponse()
+        public async Task GetAll_WhenProductsTableIsNotEmpty_ThenReturnProductListResponse()
         {
             // Arrange
             var products = _fixture.CreateMany<Product>().ToList();
@@ -166,7 +166,7 @@ namespace WebApiProject.UnitTests
                 .Returns(productListResponse);
 
             // Act
-            var result = await _productsService.GetAllAsync();
+            var result = await sut.GetAllAsync();
 
             // Assert
             result.Should().BeAssignableTo<Response<ProductsListResponseModel>>();
@@ -183,7 +183,7 @@ namespace WebApiProject.UnitTests
         }
 
         [Fact]
-        public async void GetAll_WhenProductsTableEmpty_ThenEmptyListInResponse()
+        public async Task GetAll_WhenProductsTableIsEmpty_ThenReturnEmptyListInResponse()
         {
             // Arrange
             var productListResponse = new ProductsListResponseModel()
@@ -196,7 +196,7 @@ namespace WebApiProject.UnitTests
                 .Returns(productListResponse);
 
             // Act
-            var result = await _productsService.GetAllAsync();
+            var result = await sut.GetAllAsync();
 
             // Assert
             result.Should().BeAssignableTo<Response<ProductsListResponseModel>>();
@@ -218,12 +218,12 @@ namespace WebApiProject.UnitTests
             _productsRepositoryMock.Setup(repo => repo.GetByIdAsync(It.IsAny<int>())).ReturnsAsync(product);
         }
 
-        private void ConfigureFixtureBehavior()
+        private void SetFixtureRecursionDepth(int depth)
         {
             _fixture.Behaviors.OfType<ThrowingRecursionBehavior>()
                 .ToList()
                 .ForEach(b => _fixture.Behaviors.Remove(b));
-            _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+            _fixture.Behaviors.Add(new OmitOnRecursionBehavior(depth));
         }
     }
 }
