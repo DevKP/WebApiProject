@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Diagnostics;
-using System.Threading;
 using System.Threading.Tasks;
+using Ardalis.GuardClauses;
 using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using WebApiProject.Domain.Repositories;
-using WebApiProject.Web.GuardClauses;
+using WebApiProject.Web.Data;
 using WebApiProject.Web.Models.Responses;
 
 namespace WebApiProject.Web.Services
@@ -46,7 +44,7 @@ namespace WebApiProject.Web.Services
                 if (response.Data is null)
                 {
                     response.Status = ResponseStatus.NotFound;
-                    response.ErrorMessage = nameof(ResponseStatus.NotFound);
+                    response.ErrorMessage = ErrorMessages.NotFoundInDatabase;
 
                     _logger.LogInformation("Product Id:{Id} not found.", id);
                 }
@@ -55,13 +53,12 @@ namespace WebApiProject.Web.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error while retrieving product Id:{Id} from database.", id);
+                _logger.LogError(ex, "Error while retrieving product Id:{Id} from database.", id);
 
                 return new Response<ProductResponseModel>
                 {
                     Status = ResponseStatus.Error,
-                    ErrorMessage = ex.Message,
-                    StackTrace = ex.StackTrace
+                    ErrorMessage = ErrorMessages.ErrorWhileRetrievingEntity
                 };
             }
         }
@@ -85,13 +82,12 @@ namespace WebApiProject.Web.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error while retrieving all products from database.");
+                _logger.LogError(ex, "Error while retrieving all products from database.");
 
                 return new Response<ProductsListResponseModel>
                 {
                     Status = ResponseStatus.Error,
-                    ErrorMessage = "Error while retrieving all products from database.",
-                    StackTrace = ex.StackTrace
+                    ErrorMessage = ErrorMessages.ErrorWhileRetrievingEntity,
                 };
             }
         }
