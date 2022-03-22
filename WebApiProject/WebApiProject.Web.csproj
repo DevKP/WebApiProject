@@ -25,4 +25,8 @@
     <ProjectReference Include="..\WebApiProject.Infrastructure\WebApiProject.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Extensions\" />
+  </ItemGroup>
+
 </Project>

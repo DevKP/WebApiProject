@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using WebApiProject.Domain.Entities;
 using WebApiProject.Domain.Repositories;
+using WebApiProject.Web.Extensions;
 using WebApiProject.Web.Models.Responses;
 using WebApiProject.Web.Services;
 
@@ -31,13 +32,7 @@ namespace WebApiProject.Web.Controllers
         {
             var productsListResponse = await _productsService.GetAllAsync();
 
-            return productsListResponse.Status switch
-            {
-                ResponseStatus.Ok => Ok(productsListResponse),
-                ResponseStatus.Error => BadRequest(productsListResponse),
-                ResponseStatus.NotFound => NotFound(productsListResponse),
-                _ => StatusCode(500)
-            };
+            return productsListResponse.AsActionResult();
         }
 
         [HttpGet("{id}")]
@@ -48,13 +43,7 @@ namespace WebApiProject.Web.Controllers
         {
             var productResponse = await _productsService.GetAsync(id);
 
-            return productResponse.Status switch
-            {
-                ResponseStatus.Ok => Ok(productResponse),
-                ResponseStatus.Error => BadRequest(productResponse),
-                ResponseStatus.NotFound => NotFound(productResponse),
-                _ => StatusCode(500)
-            };
+            return productResponse.AsActionResult();
         }
 
 
