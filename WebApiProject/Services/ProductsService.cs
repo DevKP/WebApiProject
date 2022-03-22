@@ -29,67 +29,59 @@ namespace WebApiProject.Web.Services
 
         public async Task<Response<ProductResponseModel>> GetAsync(int id)
         {
+            var response = new Response<ProductResponseModel>();
+
             try
             {
                 _logger.LogInformation("Retrieving product Id {Id} from database.", id);
 
                 var product = await _productsRepository.GetByIdAsync(id);
-                var responseModel = _mapper.Map<ProductResponseModel>(product);
-                var response = new Response<ProductResponseModel>
+                if (product is not null)
                 {
-                    Data = responseModel,
-                    Status = ResponseStatus.Ok
-                };
-
-                if (response.Data is null)
+                    response.Data = _mapper.Map<ProductResponseModel>(product);
+                    response.Status = ResponseStatus.Ok;
+                }
+                else
                 {
                     response.Status = ResponseStatus.NotFound;
                     response.ErrorMessage = ErrorMessages.NotFoundInDatabase;
 
                     _logger.LogInformation("Product Id:{Id} not found.", id);
                 }
-
-                return response;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error while retrieving product Id:{Id} from database.", id);
 
-                return new Response<ProductResponseModel>
-                {
-                    Status = ResponseStatus.Error,
-                    ErrorMessage = ErrorMessages.ErrorWhileRetrievingEntity
-                };
+                response.Status = ResponseStatus.Error;
+                response.ErrorMessage = ErrorMessages.ErrorWhileRetrievingEntity;
             }
+
+            return response;
         }
 
 
         public async Task<Response<ProductsListResponseModel>> GetAllAsync()
         {
+            var response = new Response<ProductsListResponseModel>();
+
             try
             {
                 _logger.LogInformation("Retrieving all products from database.");
 
                 var products = await _productsRepository.GetAllAsync();
-                var responseModel = _mapper.Map<ProductsListResponseModel>(products);
-                var response = new Response<ProductsListResponseModel>
-                {
-                    Data = responseModel,
-                    Status = ResponseStatus.Ok
-                };
-
-                return response;
+                response.Data = _mapper.Map<ProductsListResponseModel>(products);
+                response.Status = ResponseStatus.Ok;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error while retrieving all products from database.");
 
-                return new Response<ProductsListResponseModel>
-                {
-                    Status = ResponseStatus.Error,
-                    ErrorMessage = ErrorMessages.ErrorWhileRetrievingEntity,
-                };
+                response.Status = ResponseStatus.Error;
+                response.ErrorMessage = ErrorMessages.ErrorWhileRetrievingEntity;
             }
+
+            return response;
         }
     }
 }

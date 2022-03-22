@@ -109,7 +109,7 @@ namespace WebApiProject.UnitTests
             result.ErrorMessage.Should().Be(ErrorMessages.NotFoundInDatabase);
             result.Data.Should().BeNull();
 
-            _mapperMock.Verify(mapper => mapper.Map<ProductResponseModel>(It.IsAny<Product>()), Times.Exactly(1));
+            _mapperMock.Verify(mapper => mapper.Map<ProductResponseModel>(It.IsAny<Product>()), Times.Never);
             _productsRepositoryMock.Verify(s => s.GetByIdAsync(It.IsAny<int>()), Times.Once);
 
             VerifyNoOtherCallsOnMocks();
