@@ -6,7 +6,9 @@ using AutoFixture;
 using AutoMapper;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
+using NSubstitute.ExceptionExtensions;
+using NSubstitute.ReturnsExtensions;
 using WebApiProject.Domain.Entities;
 using WebApiProject.Domain.Repositories;
 using WebApiProject.Web.Data;
@@ -18,45 +20,36 @@ namespace WebApiProject.UnitTests
 {
     public class ProductsServiceTests
     {
-        private readonly Mock<IProductsRepository> _productsRepositoryMock;
-        private readonly Mock<IMapper> _mapperMock;
-        private readonly Mock<ILogger<IProductsService>> _loggerMock;
-        private readonly ProductsService sut;
+        private readonly ProductsService _sut;
+        private readonly IProductsRepository _productsRepository = Substitute.For<IProductsRepository>();
+        private readonly ILogger<IProductsService> _logger = Substitute.For<ILogger<IProductsService>>();
+        private readonly IMapper _mapper = Substitute.For<IMapper>();
         private readonly Fixture _fixture = new();
 
         public ProductsServiceTests()
         {
             SetFixtureRecursionDepth(1);
-
-            _productsRepositoryMock = new Mock<IProductsRepository>();
-            _mapperMock = new Mock<IMapper>();
-
-            _loggerMock = new Mock<ILogger<IProductsService>>();
-            _loggerMock.Setup(logger => logger.IsEnabled(It.IsAny<LogLevel>()))
-                .Returns(true)
-                .Callback(() => _loggerMock.Verify(logger => logger.IsEnabled(It.IsAny<LogLevel>())));
-
-            sut = new ProductsService(_productsRepositoryMock.Object, _mapperMock.Object, _loggerMock.Object);
+            _sut = new ProductsService(_productsRepository, _mapper, _logger);
         }
 
         [Fact]
         public void Ctor_WhenProductsRepositoryIsNull_ThenThrowArgumentNullException()
         {
-            Action action = () => new ProductsService(null, _mapperMock.Object, _loggerMock.Object);
+            Action action = () => new ProductsService(null, _mapper, _logger);
             action.Should().Throw<ArgumentNullException>();
         }
 
         [Fact]
         public void Ctor_WhenMapperIsNull_ThenThrowArgumentNullException()
         {
-            Action action = () => new ProductsService(_productsRepositoryMock.Object, null, _loggerMock.Object);
+            Action action = () => new ProductsService(_productsRepository, null, _logger);
             action.Should().Throw<ArgumentNullException>();
         }
 
         [Fact]
         public void Ctor_WhenLoggerIsNull_ThenThrowArgumentNullException()
         {
-            Action action = () => new ProductsService(_productsRepositoryMock.Object, _mapperMock.Object, null);
+            Action action = () => new ProductsService(_productsRepository, _mapper, null);
             action.Should().Throw<ArgumentNullException>();
         }
 
@@ -64,6 +57,7 @@ namespace WebApiProject.UnitTests
         public async Task GetProductById_WhenProductExists_ThenReturnOkProductResponse()
         {
             // Arrange
+            const int productId = 1;
             var product = _fixture.Create<Product>();
 
             var productResponse = new ProductResponseModel()
@@ -75,33 +69,33 @@ namespace WebApiProject.UnitTests
                 CategoryName = "Test category"
             };
 
-            SetupGetByIdAsyncResult(product);
-            SetupMapperForGetByIdAction(productResponse);
+            _productsRepository.GetByIdAsync(productId).Returns(product);
+            _mapper.Map<ProductResponseModel>(Arg.Any<Product>()).Returns(productResponse);
 
             // Act
-            var result = await sut.GetAsync(1);
+            var result = await _sut.GetAsync(productId);
 
             // Assert
             result.Should().BeAssignableTo<Response<ProductResponseModel>>();
             result.Status.Should().Be(ResponseStatus.Ok);
             result.ErrorMessage.Should().BeNull();
-            result.Data.Should().Be(productResponse);
+            result.Data.Should().BeEquivalentTo(productResponse);
 
-            _mapperMock.Verify(mapper => mapper.Map<ProductResponseModel>(It.IsAny<Product>()), Times.Exactly(1));
-            _productsRepositoryMock.Verify(s => s.GetByIdAsync(It.IsAny<int>()), Times.Once);
-
-            VerifyNoOtherCallsOnMocks();
+            await _productsRepository.Received(1).GetByIdAsync(productId);
+            _mapper.Received(1).Map<ProductResponseModel>(Arg.Any<Product>());
         }
 
         [Fact]
         public async Task GetProductById_WhenRepositoryReturnsNull_ThenReturnNotFoundResponse()
         {
             // Arrange
-            SetupGetByIdAsyncResult(null);
-            SetupMapperForGetByIdAction(null);
+            const int productId = 1;
+
+            _productsRepository.GetByIdAsync(productId).ReturnsNull();
+            _mapper.Map<ProductResponseModel>(Arg.Any<Product>()).ReturnsNull();
 
             // Act
-            var result = await sut.GetAsync(1);
+            var result = await _sut.GetAsync(productId);
 
             // Assert
             result.Should().BeAssignableTo<Response<ProductResponseModel>>();
@@ -109,21 +103,21 @@ namespace WebApiProject.UnitTests
             result.ErrorMessage.Should().Be(ErrorMessages.NotFoundInDatabase);
             result.Data.Should().BeNull();
 
-            _mapperMock.Verify(mapper => mapper.Map<ProductResponseModel>(It.IsAny<Product>()), Times.Never);
-            _productsRepositoryMock.Verify(s => s.GetByIdAsync(It.IsAny<int>()), Times.Once);
-
-            VerifyNoOtherCallsOnMocks();
+            await _productsRepository.Received(1).GetByIdAsync(productId);
+            _mapper.Received(0).Map<ProductResponseModel>(Arg.Any<Product>());
         }
 
         [Fact]
         public async Task GetProductById_WhenUnknownExceptionOccursInService_ThenReturnErrorResponse()
         {
             // Arrange
-            _productsRepositoryMock.Setup(repo => repo.GetByIdAsync(It.IsAny<int>()))
-                .Throws<Exception>();
+            const int productId = 1;
+
+            _productsRepository.GetByIdAsync(productId).Throws<Exception>();
+            _mapper.Map<ProductResponseModel>(Arg.Any<Product>()).ReturnsNull();
 
             // Act
-            var result = await sut.GetAsync(1);
+            var result = await _sut.GetAsync(productId);
 
             // Assert
             result.Should().BeAssignableTo<Response<ProductResponseModel>>();
@@ -131,10 +125,8 @@ namespace WebApiProject.UnitTests
             result.ErrorMessage.Should().Be(ErrorMessages.ErrorWhileRetrievingEntity);
             result.Data.Should().BeNull();
 
-            _mapperMock.Verify(mapper => mapper.Map<ProductResponseModel>(It.IsAny<Product>()), Times.Never);
-            _productsRepositoryMock.Verify(s => s.GetByIdAsync(It.IsAny<int>()), Times.Once);
-
-            VerifyNoOtherCallsOnMocks();
+            await _productsRepository.Received(1).GetByIdAsync(productId);
+            _mapper.Received(0).Map<ProductResponseModel>(Arg.Any<Product>());
         }
 
         [Fact]
@@ -154,24 +146,20 @@ namespace WebApiProject.UnitTests
                 }).ToList()
             };
 
-            _productsRepositoryMock.Setup(repo => repo.GetAllAsync()).ReturnsAsync(products);
-            _mapperMock.Setup(mapper => mapper.Map<ProductsListResponseModel>(It.IsAny<IEnumerable<Product>>()))
-                .Returns(productListResponse);
+            _productsRepository.GetAllAsync().Returns(products);
+            _mapper.Map<ProductsListResponseModel>(Arg.Any<IEnumerable<Product>>()).Returns(productListResponse);
 
             // Act
-            var result = await sut.GetAllAsync();
+            var result = await _sut.GetAllAsync();
 
             // Assert
             result.Should().BeAssignableTo<Response<ProductsListResponseModel>>();
             result.Status.Should().Be(ResponseStatus.Ok);
             result.ErrorMessage.Should().BeNull();
-            result.Data.Should().Be(productListResponse);
+            result.Data.Should().BeEquivalentTo(productListResponse);
 
-            _mapperMock.Verify(mapper => mapper.Map<ProductsListResponseModel>
-                (It.IsAny<IEnumerable<Product>>()), Times.Once);
-            _productsRepositoryMock.Verify(s => s.GetAllAsync(), Times.Once);
-
-            VerifyNoOtherCallsOnMocks();
+            await _productsRepository.Received(1).GetAllAsync();
+            _mapper.Received(1).Map<ProductsListResponseModel>(Arg.Any<IEnumerable<Product>>());
         }
 
         [Fact]
@@ -183,42 +171,20 @@ namespace WebApiProject.UnitTests
                 Products = new List<ProductResponseModel>()
             };
 
-            _productsRepositoryMock.Setup(repo => repo.GetAllAsync()).ReturnsAsync(new List<Product>());
-            _mapperMock.Setup(mapper => mapper.Map<ProductsListResponseModel>(It.IsAny<IEnumerable<Product>>()))
-                .Returns(productListResponse);
+            _productsRepository.GetAllAsync().Returns(new List<Product>());
+            _mapper.Map<ProductsListResponseModel>(Arg.Any<IEnumerable<Product>>()).Returns(productListResponse);
 
             // Act
-            var result = await sut.GetAllAsync();
+            var result = await _sut.GetAllAsync();
 
             // Assert
             result.Should().BeAssignableTo<Response<ProductsListResponseModel>>();
-            result.Status.Should().Be(ResponseStatus.Ok);
-            result.ErrorMessage.Should().BeNull();
-            result.Data.Should().Be(productListResponse);
-            result.Data.Products.Should().BeEmpty();
+            result.Status.Should().Be(ResponseStatus.NotFound);
+            result.ErrorMessage.Should().Be(ErrorMessages.NotFoundInDatabase);
+            result.Data.Should().BeNull();
 
-            _mapperMock.Verify(mapper => mapper.Map<ProductsListResponseModel>
-                (It.IsAny<IEnumerable<Product>>()), Times.Once);
-            _productsRepositoryMock.Verify(s => s.GetAllAsync(), Times.Once);
-
-            VerifyNoOtherCallsOnMocks();
-        }
-
-        private void VerifyNoOtherCallsOnMocks()
-        {
-            _mapperMock.VerifyNoOtherCalls();
-            _productsRepositoryMock.VerifyNoOtherCalls();
-        }
-
-        private void SetupGetByIdAsyncResult(Product product)
-        {
-            _productsRepositoryMock.Setup(repo => repo.GetByIdAsync(It.IsAny<int>())).ReturnsAsync(product);
-        }
-
-        private void SetupMapperForGetByIdAction(ProductResponseModel productResponse)
-        {
-            _mapperMock.Setup(mapper => mapper.Map<ProductResponseModel>(It.IsAny<Product>()))
-                .Returns(productResponse);
+            await _productsRepository.Received(1).GetAllAsync();
+            _mapper.Received(0).Map<ProductsListResponseModel>(Arg.Any<IEnumerable<Product>>());
         }
 
         private void SetFixtureRecursionDepth(int depth)

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Ardalis.GuardClauses;
 using AutoMapper;
@@ -70,8 +71,18 @@ namespace WebApiProject.Web.Services
                 _logger.LogInformation("Retrieving all products from database.");
 
                 var products = await _productsRepository.GetAllAsync();
-                response.Data = _mapper.Map<ProductsListResponseModel>(products);
-                response.Status = ResponseStatus.Ok;
+                if (products.Any())
+                {
+                    response.Data = _mapper.Map<ProductsListResponseModel>(products);
+                    response.Status = ResponseStatus.Ok;
+                }
+                else
+                {
+                    response.Status = ResponseStatus.NotFound;
+                    response.ErrorMessage = ErrorMessages.NotFoundInDatabase;
+
+                    _logger.LogInformation("Products list is empty.");
+                }
             }
             catch (Exception ex)
             {
