@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using AutoFixture;
 using AutoMapper;
 using FluentAssertions;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
 using WebApiProject.Domain.Entities;
@@ -78,8 +76,7 @@ namespace WebApiProject.UnitTests
             };
 
             SetupGetByIdAsyncResult(product);
-            _mapperMock.Setup(mapper => mapper.Map<ProductResponseModel>(It.Is<Product>(p => p == product)))
-                .Returns(productResponse);
+            SetupMapperForGetByIdAction(productResponse);
 
             // Act
             var result = await sut.GetAsync(1);
@@ -93,8 +90,7 @@ namespace WebApiProject.UnitTests
             _mapperMock.Verify(mapper => mapper.Map<ProductResponseModel>(It.IsAny<Product>()), Times.Exactly(1));
             _productsRepositoryMock.Verify(s => s.GetByIdAsync(It.IsAny<int>()), Times.Once);
 
-            _mapperMock.VerifyNoOtherCalls();
-            _productsRepositoryMock.VerifyNoOtherCalls();
+            VerifyNoOtherCallsOnMocks();
         }
 
         [Fact]
@@ -102,8 +98,7 @@ namespace WebApiProject.UnitTests
         {
             // Arrange
             SetupGetByIdAsyncResult(null);
-            _mapperMock.Setup(mapper => mapper.Map<ProductResponseModel>(It.Is<Product>(p => p == null)))
-                .Returns<ProductResponseModel>(null);
+            SetupMapperForGetByIdAction(null);
 
             // Act
             var result = await sut.GetAsync(1);
@@ -117,8 +112,7 @@ namespace WebApiProject.UnitTests
             _mapperMock.Verify(mapper => mapper.Map<ProductResponseModel>(It.IsAny<Product>()), Times.Exactly(1));
             _productsRepositoryMock.Verify(s => s.GetByIdAsync(It.IsAny<int>()), Times.Once);
 
-            _mapperMock.VerifyNoOtherCalls();
-            _productsRepositoryMock.VerifyNoOtherCalls();
+            VerifyNoOtherCallsOnMocks();
         }
 
         [Fact]
@@ -140,8 +134,7 @@ namespace WebApiProject.UnitTests
             _mapperMock.Verify(mapper => mapper.Map<ProductResponseModel>(It.IsAny<Product>()), Times.Never);
             _productsRepositoryMock.Verify(s => s.GetByIdAsync(It.IsAny<int>()), Times.Once);
 
-            _mapperMock.VerifyNoOtherCalls();
-            _productsRepositoryMock.VerifyNoOtherCalls();
+            VerifyNoOtherCallsOnMocks();
         }
 
         [Fact]
@@ -178,8 +171,7 @@ namespace WebApiProject.UnitTests
                 (It.IsAny<IEnumerable<Product>>()), Times.Once);
             _productsRepositoryMock.Verify(s => s.GetAllAsync(), Times.Once);
 
-            _mapperMock.VerifyNoOtherCalls();
-            _productsRepositoryMock.VerifyNoOtherCalls();
+            VerifyNoOtherCallsOnMocks();
         }
 
         [Fact]
@@ -209,6 +201,11 @@ namespace WebApiProject.UnitTests
                 (It.IsAny<IEnumerable<Product>>()), Times.Once);
             _productsRepositoryMock.Verify(s => s.GetAllAsync(), Times.Once);
 
+            VerifyNoOtherCallsOnMocks();
+        }
+
+        private void VerifyNoOtherCallsOnMocks()
+        {
             _mapperMock.VerifyNoOtherCalls();
             _productsRepositoryMock.VerifyNoOtherCalls();
         }
@@ -216,6 +213,12 @@ namespace WebApiProject.UnitTests
         private void SetupGetByIdAsyncResult(Product product)
         {
             _productsRepositoryMock.Setup(repo => repo.GetByIdAsync(It.IsAny<int>())).ReturnsAsync(product);
+        }
+
+        private void SetupMapperForGetByIdAction(ProductResponseModel productResponse)
+        {
+            _mapperMock.Setup(mapper => mapper.Map<ProductResponseModel>(It.IsAny<Product>()))
+                .Returns(productResponse);
         }
 
         private void SetFixtureRecursionDepth(int depth)
