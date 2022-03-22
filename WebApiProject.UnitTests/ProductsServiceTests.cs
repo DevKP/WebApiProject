@@ -11,6 +11,7 @@ using NSubstitute.ExceptionExtensions;
 using NSubstitute.ReturnsExtensions;
 using WebApiProject.Domain.Entities;
 using WebApiProject.Domain.Repositories;
+using WebApiProject.UnitTests.Extensions;
 using WebApiProject.Web.Data;
 using WebApiProject.Web.Models.Responses;
 using WebApiProject.Web.Services;
@@ -28,7 +29,7 @@ namespace WebApiProject.UnitTests
 
         public ProductsServiceTests()
         {
-            SetFixtureRecursionDepth(1);
+            _fixture.SetFixtureRecursionDepth(1);
             _sut = new ProductsService(_productsRepository, _mapper, _logger);
         }
 
@@ -185,14 +186,6 @@ namespace WebApiProject.UnitTests
 
             await _productsRepository.Received(1).GetAllAsync();
             _mapper.Received(0).Map<ProductsListResponseModel>(Arg.Any<IEnumerable<Product>>());
-        }
-
-        private void SetFixtureRecursionDepth(int depth)
-        {
-            _fixture.Behaviors.OfType<ThrowingRecursionBehavior>()
-                .ToList()
-                .ForEach(b => _fixture.Behaviors.Remove(b));
-            _fixture.Behaviors.Add(new OmitOnRecursionBehavior(depth));
         }
     }
 }

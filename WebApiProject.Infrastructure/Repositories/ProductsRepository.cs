@@ -28,9 +28,9 @@ namespace WebApiProject.Infrastructure.Repositories
             return await _dbContext.Products.FindAsync(productId);
         }
 
-        public string GetTheMostFrequentCategoryName()
+        public async Task<string> GetTheMostFrequentCategoryNameAsync()
         {
-            return _dbContext.Products
+            return (await _dbContext.Products
                 .GroupBy(p => p.Category.Name, 
                     (name, products) =>
                     new
@@ -39,7 +39,7 @@ namespace WebApiProject.Infrastructure.Repositories
                         Name = name
                     })
                 .OrderByDescending(p => p.Count)
-                .First().Name;
+                .FirstAsync()).Name;
         }
     }
 }

@@ -10,6 +10,6 @@ namespace WebApiProject.Domain.Repositories
 {
     public interface IProductsRepository : IRepository<Product>
     {
-        string GetTheMostFrequentCategoryName();
+        Task<string> GetTheMostFrequentCategoryNameAsync();
     }
 }
