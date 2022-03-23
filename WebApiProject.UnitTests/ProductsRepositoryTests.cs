@@ -12,18 +12,12 @@ using Xunit;
 
 namespace WebApiProject.UnitTests
 {
-    public class ProductsRepositoryTests
+    public sealed class ProductsRepositoryTests : DatabaseContextTests
     {
         private readonly ProductsRepository _sut;
-        private readonly DatabaseContext _databaseContext;
 
         public ProductsRepositoryTests()
         {
-            var dbContextOptions = new DbContextOptionsBuilder<DatabaseContext>()
-                .UseInMemoryDatabase(Guid.NewGuid().ToString())
-                .Options;
-
-            _databaseContext = Create.MockedDbContextFor<DatabaseContext>(dbContextOptions);
             _sut = new ProductsRepository(_databaseContext);
 
             ClearDatabase();
@@ -91,23 +85,6 @@ namespace WebApiProject.UnitTests
             result.Should().Be(TableTestData.MostFrequentCategory);
         }
 
-        private void SeedDatabase()
-        {
-            _databaseContext.Categories.AddRange(TableTestData.Categories);
-            _databaseContext.Products.AddRange(TableTestData.Products);
-            _databaseContext.SaveChanges();
-        }
-
-        private void ClearDatabase()
-        {
-            ClearTable(_databaseContext.Products);
-            ClearTable(_databaseContext.Categories);
-        }
-
-        private void ClearTable<T>(DbSet<T> dbSet) where T: class, IEntity
-        {
-            dbSet.RemoveRange(dbSet);
-            _databaseContext.SaveChanges();
-        }
+       
     }
 }

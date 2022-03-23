@@ -12,18 +12,12 @@ using Xunit;
 
 namespace WebApiProject.UnitTests
 {
-    public class CategoriesRepositoryTests
+    public sealed class CategoriesRepositoryTests : DatabaseContextTests
     {
         private readonly CategoriesRepository _sut;
-        private readonly DatabaseContext _databaseContext;
 
         public CategoriesRepositoryTests()
         {
-            var dbContextOptions = new DbContextOptionsBuilder<DatabaseContext>()
-                .UseInMemoryDatabase(Guid.NewGuid().ToString())
-                .Options;
-
-            _databaseContext = Create.MockedDbContextFor<DatabaseContext>(dbContextOptions);
             _sut = new CategoriesRepository(_databaseContext);
 
             ClearDatabase();
@@ -77,25 +71,6 @@ namespace WebApiProject.UnitTests
             // Assert
             result.Should().BeEquivalentTo(TableTestData.Categories, 
                 config => config.Excluding(c => c.Products));
-        }
-
-        private void SeedDatabase()
-        {
-            _databaseContext.Categories.AddRange(TableTestData.Categories);
-            _databaseContext.Products.AddRange(TableTestData.Products);
-            _databaseContext.SaveChanges();
-        }
-
-        private void ClearDatabase()
-        {
-            ClearTable(_databaseContext.Products);
-            ClearTable(_databaseContext.Categories);
-        }
-
-        private void ClearTable<T>(DbSet<T> dbSet) where T: class, IEntity
-        {
-            dbSet.RemoveRange(dbSet);
-            _databaseContext.SaveChanges();
         }
     }
 }
