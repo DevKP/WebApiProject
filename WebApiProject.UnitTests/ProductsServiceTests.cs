@@ -21,14 +21,17 @@ namespace WebApiProject.UnitTests
 {
     public class ProductsServiceTests
     {
+        private readonly IProductsRepository _productsRepository;
+        private readonly ILogger<IProductsService> _logger;
+        private readonly IMapper _mapper;
         private readonly ProductsService _sut;
-        private readonly IProductsRepository _productsRepository = Substitute.For<IProductsRepository>();
-        private readonly ILogger<IProductsService> _logger = Substitute.For<ILogger<IProductsService>>();
-        private readonly IMapper _mapper = Substitute.For<IMapper>();
         private readonly Fixture _fixture;
 
         public ProductsServiceTests()
         {
+            _productsRepository = Substitute.For<IProductsRepository>();
+            _logger = Substitute.For<ILogger<IProductsService>>();
+            _mapper = Substitute.For<IMapper>();
             _sut = new ProductsService(_productsRepository, _mapper, _logger);
             _fixture = new Fixture();
             
