@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Ardalis.GuardClauses;
 using Microsoft.EntityFrameworkCore;
 using WebApiProject.Domain.Entities;
 using WebApiProject.Domain.Repositories;
@@ -15,7 +12,12 @@ namespace WebApiProject.Infrastructure.Repositories
     {
         private readonly DatabaseContext _dbContext;
 
-        public CategoriesRepository(DatabaseContext dbContext) => _dbContext = dbContext;
+        public CategoriesRepository(DatabaseContext dbContext)
+        {
+            Guard.Against.Null(dbContext, nameof(dbContext));
+
+            _dbContext = dbContext;
+        }
 
         public async Task<IEnumerable<Category>> GetAllAsync()
         {

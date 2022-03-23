@@ -1,11 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
+using Ardalis.GuardClauses;
 using WebApiProject.Domain.Entities;
 using WebApiProject.Domain.Repositories;
 using WebApiProject.Infrastructure.Db;
@@ -16,7 +13,12 @@ namespace WebApiProject.Infrastructure.Repositories
     {
         private readonly DatabaseContext _dbContext;
 
-        public ProductsRepository(DatabaseContext dbContext) => _dbContext = dbContext;
+        public ProductsRepository(DatabaseContext dbContext)
+        {
+            Guard.Against.Null(dbContext, nameof(dbContext));
+
+            _dbContext = dbContext;
+        }
 
         public async Task<IEnumerable<Product>> GetAllAsync()
         {

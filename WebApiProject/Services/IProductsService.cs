@@ -1,5 +1,4 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using WebApiProject.Web.Models.Responses;
 
 namespace WebApiProject.Web.Services

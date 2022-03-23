@@ -25,33 +25,38 @@ namespace WebApiProject.UnitTests
         private readonly IProductsRepository _productsRepository = Substitute.For<IProductsRepository>();
         private readonly ILogger<IProductsService> _logger = Substitute.For<ILogger<IProductsService>>();
         private readonly IMapper _mapper = Substitute.For<IMapper>();
-        private readonly Fixture _fixture = new();
+        private readonly Fixture _fixture;
 
         public ProductsServiceTests()
         {
-            _fixture.SetFixtureRecursionDepth(1);
             _sut = new ProductsService(_productsRepository, _mapper, _logger);
+            _fixture = new Fixture();
+            
+            _fixture.SetFixtureRecursionDepth(1);
         }
 
         [Fact]
         public void Ctor_WhenProductsRepositoryIsNull_ThenThrowArgumentNullException()
         {
             Action action = () => new ProductsService(null, _mapper, _logger);
-            action.Should().Throw<ArgumentNullException>();
+            action.Should().Throw<ArgumentNullException>()
+                .Which.ParamName.Should().Be("productsRepository");
         }
 
         [Fact]
         public void Ctor_WhenMapperIsNull_ThenThrowArgumentNullException()
         {
             Action action = () => new ProductsService(_productsRepository, null, _logger);
-            action.Should().Throw<ArgumentNullException>();
+            action.Should().Throw<ArgumentNullException>()
+                .Which.ParamName.Should().Be("mapper");
         }
 
         [Fact]
         public void Ctor_WhenLoggerIsNull_ThenThrowArgumentNullException()
         {
             Action action = () => new ProductsService(_productsRepository, _mapper, null);
-            action.Should().Throw<ArgumentNullException>();
+            action.Should().Throw<ArgumentNullException>()
+                .Which.ParamName.Should().Be("logger");
         }
 
         [Fact]
@@ -180,12 +185,12 @@ namespace WebApiProject.UnitTests
 
             // Assert
             result.Should().BeAssignableTo<Response<ProductsListResponseModel>>();
-            result.Status.Should().Be(ResponseStatus.NotFound);
-            result.ErrorMessage.Should().Be(ErrorMessages.NotFoundInDatabase);
-            result.Data.Should().BeNull();
+            result.Status.Should().Be(ResponseStatus.Ok);
+            result.ErrorMessage.Should().BeNull();
+            result.Data.Products.Should().BeEmpty();
 
             await _productsRepository.Received(1).GetAllAsync();
-            _mapper.Received(0).Map<ProductsListResponseModel>(Arg.Any<IEnumerable<Product>>());
+            _mapper.Received(1).Map<ProductsListResponseModel>(Arg.Any<IEnumerable<Product>>());
         }
     }
 }

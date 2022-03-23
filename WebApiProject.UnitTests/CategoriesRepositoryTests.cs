@@ -12,19 +12,19 @@ using Xunit;
 
 namespace WebApiProject.UnitTests
 {
-    public class ProductsRepositoryTests
+    public class CategoriesRepositoryTests
     {
-        private readonly ProductsRepository _sut;
+        private readonly CategoriesRepository _sut;
         private readonly DatabaseContext _databaseContext;
 
-        public ProductsRepositoryTests()
+        public CategoriesRepositoryTests()
         {
             var dbContextOptions = new DbContextOptionsBuilder<DatabaseContext>()
                 .UseInMemoryDatabase(Guid.NewGuid().ToString())
                 .Options;
 
             _databaseContext = Create.MockedDbContextFor<DatabaseContext>(dbContextOptions);
-            _sut = new ProductsRepository(_databaseContext);
+            _sut = new CategoriesRepository(_databaseContext);
 
             ClearDatabase();
             SeedDatabase();
@@ -33,41 +33,41 @@ namespace WebApiProject.UnitTests
         [Fact]
         public void Ctor_WhenDbContextIsNull_ThenThrowArgumentNullException()
         {
-            Action action = () => new ProductsRepository(null);
+            Action action = () => new CategoriesRepository(null);
             action.Should().Throw<ArgumentNullException>()
                 .Which.ParamName.Should().Be("dbContext");
         }
 
         [Fact]
-        public async Task GetByIdAsync_WhenProductExistsInDb_ThenReturnThatProduct()
+        public async Task GetByIdAsync_WhenCategoriesExistsInDb_ThenReturnThatProduct()
         {
             // Arrange
-            const int productId = 3;
-            var expectedResult = TableTestData.Products.FirstOrDefault(p => p.Id == productId);
+            const int categoryId = 3;
+            var expectedResult = TableTestData.Categories.FirstOrDefault(p => p.Id == categoryId);
 
             // Act
-            var result = await _sut.GetByIdAsync(productId);
+            var result = await _sut.GetByIdAsync(categoryId);
 
             // Assert
             result.Should().BeEquivalentTo(expectedResult,
-                config => config.Excluding(p => p.Category));
+                config => config.Excluding(c => c.Products));
         }
 
         [Fact]
-        public async Task GetByIdAsync_WhenProductDoNotExistsInDb_ThenReturnNull()
+        public async Task GetByIdAsync_WhenCategoriesDoNotExistsInDb_ThenReturnNull()
         {
             // Arrange
-            const int productId = 69;
+            const int categoryId = 69;
 
             // Act
-            var result = await _sut.GetByIdAsync(productId);
+            var result = await _sut.GetByIdAsync(categoryId);
 
             // Assert
             result.Should().BeNull();
         }
 
         [Fact]
-        public async Task GetAllAsync_WhenProductsExistsInDb_ThenReturnAllProducts()
+        public async Task GetAllAsync_WhenCategoriesExistsInDb_ThenReturnAllProducts()
         {
             // Arrange
 
@@ -75,20 +75,8 @@ namespace WebApiProject.UnitTests
             var result = await _sut.GetAllAsync();
 
             // Assert
-            result.Should().BeEquivalentTo(TableTestData.Products, 
-                config => config.Excluding(p => p.Category));
-        }
-
-        [Fact]
-        public async Task GetTheMostFrequentCategoryName_ShouldReturnTrueCategoryName()
-        {
-            // Arrange
-
-            // Act
-            var result = await _sut.GetTheMostFrequentCategoryNameAsync();
-
-            // Assert
-            result.Should().Be(TableTestData.MostFrequentCategory);
+            result.Should().BeEquivalentTo(TableTestData.Categories, 
+                config => config.Excluding(c => c.Products));
         }
 
         private void SeedDatabase()
