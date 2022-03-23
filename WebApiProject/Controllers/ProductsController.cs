@@ -1,5 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using WebApiProject.Domain.Repositories;
+﻿using System.Threading.Tasks;
+using Ardalis.GuardClauses;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using WebApiProject.Web.Extensions;
+using WebApiProject.Web.Models.Responses;
+using WebApiProject.Web.Services;
 
 namespace WebApiProject.Web.Controllers
 {
@@ -7,31 +12,36 @@ namespace WebApiProject.Web.Controllers
     [ApiController]
     public class ProductsController : ControllerBase
     {
-        private readonly IProductsRepository _productsRepository;
+        private readonly IProductsService _productsService;
 
-        public ProductsController(IProductsRepository productsRepository)
+        public ProductsController(IProductsService productsService)
         {
-            _productsRepository = productsRepository;
+            Guard.Against.Null(productsService, nameof(productsService));
+
+            _productsService = productsService;
         }
 
-        [HttpGet()]
-        public IActionResult GetAll()
+        [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Response<ProductsListResponseModel>))]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Response<ProductsListResponseModel>))]
+        public async Task<IActionResult> GetAll()
         {
-            var products = _productsRepository.GetAll();
+            var productsListResponse = await _productsService.GetAllAsync();
 
-            return Ok(products);
+            return productsListResponse.AsActionResult();
         }
 
         [HttpGet("{id}")]
-        public IActionResult Get(int id)
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Response<ProductResponseModel>))]
+        [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Response<ProductResponseModel>))]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Response<ProductResponseModel>))]
+        public async Task<IActionResult> Get(int id)
         {
-            var product = _productsRepository.GetById(id);
-            if (product == null)
-            {
-                return NotFound("Product not found.");
-            }
+            var productResponse = await _productsService.GetAsync(id);
 
-            return Ok(product);
+            return productResponse.AsActionResult();
         }
+
+
     }
 }

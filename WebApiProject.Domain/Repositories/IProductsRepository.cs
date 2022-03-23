@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using WebApiProject.Domain.Entities;
 
 namespace WebApiProject.Domain.Repositories
 {
     public interface IProductsRepository : IRepository<Product>
     {
-        string GetTheMostFrequentCategoryName();
+        Task<string> GetTheMostFrequentCategoryNameAsync();
     }
 }

@@ -1,9 +1,11 @@
 ﻿using WebApiProject.Domain.Entities;
 
-namespace WebApiProject.Infrastructure.Data
+namespace WebApiProject.UnitTests.TableData
 {
-    static class TablesSeed
+    static class TableTestData
     {
+        public const string MostFrequentCategory = "Cosmetics";
+
         public static Category[] Categories =>
             new[]
             {

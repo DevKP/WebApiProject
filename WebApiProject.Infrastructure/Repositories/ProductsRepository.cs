@@ -1,10 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
+using Ardalis.GuardClauses;
 using WebApiProject.Domain.Entities;
 using WebApiProject.Domain.Repositories;
 using WebApiProject.Infrastructure.Db;
@@ -15,21 +13,26 @@ namespace WebApiProject.Infrastructure.Repositories
     {
         private readonly DatabaseContext _dbContext;
 
-        public ProductsRepository(DatabaseContext dbContext) => _dbContext = dbContext;
-
-        public IEnumerable<Product> GetAll()
+        public ProductsRepository(DatabaseContext dbContext)
         {
-            return _dbContext.Products.ToList();
+            Guard.Against.Null(dbContext, nameof(dbContext));
+
+            _dbContext = dbContext;
         }
 
-        public Product GetById(int productId)
+        public async Task<IEnumerable<Product>> GetAllAsync()
         {
-            return _dbContext.Products.Find(productId);
+            return await _dbContext.Products.ToListAsync();
         }
 
-        public string GetTheMostFrequentCategoryName()
+        public async Task<Product> GetByIdAsync(int productId)
         {
-            return _dbContext.Products
+            return await _dbContext.Products.FindAsync(productId);
+        }
+
+        public async Task<string> GetTheMostFrequentCategoryNameAsync()
+        {
+            return (await _dbContext.Products
                 .GroupBy(p => p.Category.Name, 
                     (name, products) =>
                     new
@@ -38,7 +41,7 @@ namespace WebApiProject.Infrastructure.Repositories
                         Name = name
                     })
                 .OrderByDescending(p => p.Count)
-                .First().Name;
+                .FirstAsync()).Name;
         }
     }
 }

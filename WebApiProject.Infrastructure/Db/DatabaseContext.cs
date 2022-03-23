@@ -12,7 +12,7 @@ namespace WebApiProject.Infrastructure.Db
 
         public DatabaseContext(DbContextOptions<DatabaseContext> options) : base(options)
         {
-            Database.EnsureCreated();
+            Database?.EnsureCreated();
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
